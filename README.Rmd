@@ -1,0 +1,86 @@
+---
+title: '[Mod 3] Data cleaning'
+author: "Francis"
+date: "24 July 2016"
+output: html_document
+---
+
+This R Markdown document details the process of data cleaning for the Module 3: Data Cleaning Assignment. The data set given was extracted from Human Activity Recognition Using Smartphones Project.
+
+First we download the data into the working directory
+
+```{r}
+download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip",destfile='data.zip')
+```
+
+...And extract file zip folder into current directory
+```{r}
+unzip('data.zip')
+```
+
+
+For easy and comprehensive, it is advisable to get the name of all the files inside the extracted folder (including subfolder and all files)
+
+```{r}
+fname = unzip('data.zip', list=TRUE)$Name
+```
+
+It is best to read the descriptions of dataset and README.txt is recommended to be the first to go through. There are activities' labels which can be found at
+```{r}
+activity_name<-read.table(fname[1])
+```
+As well as features' labels
+```{r}
+feature_name<-read.table(fname[2])
+```
+
+Train data locates in train data folder, which corresponds to file 30 to 32 according to file name list
+```{r}
+train <- read.table(fname[31])
+activity_train <- read.table(fname[32])
+subject_train <- read.table(fname[30])
+```
+
+Similarly, test data set can be found in the same manner
+```{r}
+test <- read.table(fname[17])
+activity_test <- read.table(fname[18])
+subject_test <- read.table(fname[16])
+```
+
+The next step would satisfy the first requirement: Merges the training and the test sets to create one data set
+```{r}
+data<-rbind(train,test)
+activity<-rbind(activity_train,activity_test)
+subject<-rbind(subject_train,subject_test)
+```
+
+Note that the experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years and participants' ID is in the subject dataset. Each person performed six activities (WALKING, WALKING UPSTAIRS, WALKING DOWNSTAIRS, SITTING, STANDING, LAYING) wearing a smartphone (Samsung Galaxy S II) on the waist. This activity can be found in activity dataset.
+
+
+For convenient, do label the feature name by replacing the columns' names
+```{r}
+names(data)<-feature_name[,2]
+```
+
+Extracts only the measurements on the mean and standard deviation for each measurement. The word 'mean' can be spelled as 'Mean' so the function 'tolower' would take care of that
+```{r}
+meanlist<-grep('mean',tolower(feature_name[,2]), value=FALSE)
+stdlist<-grep('std',tolower(feature_name[,2]), value=FALSE)
+data<-data[,c(meanlist,stdlist)]
+```
+
+As mentioned earlier, activity data set refers to activity code. The detail descriptive activity names lies in another file which we should merge to name the activities in the data set. For convenient and for the sake of readability, we rename and reorder to show the activity name. This would satisfy the thrid and fourth task: Uses descriptive activity names to name the activities in the data set and Appropriately labels the data set with descriptive variable names.
+```{r}
+data<-cbind(activity,subject,data)
+names(data)[2]<-'Subject'
+data<-merge(data,activity_name,by='V1',all.x = T)
+data<-data[,c(89,2:88)]
+names(data)[1]<-'Activity'
+```
+The last step is straightforward: Create a second, independent tidy data set with the average of each variable for each activity and each subject
+```{r}
+library(plyr)
+Meandata <-ddply(data, c('Activity', 'Subject'), function(x) colMeans(x[, 3:88]))
+write.table(Meandata, "Mean_data.txt", row.name=FALSE)
+```
