@@ -1,0 +1,40 @@
+---
+title: "Code Book"
+author: "Francis"
+date: "30 July 2016"
+output: html_document
+---
+
+#Overview
+The `run_analysis.R` address 5 specific requirements of the assignemnt:
+
+1. Merges the training and the test sets to create one data set.
+
+2. Extracts only the measurements on the mean and standard deviation for each measurement.
+
+3. Uses descriptive activity names to name the activities in the data set
+
+4. Appropriately labels the data set with descriptive variable names.
+
+5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+#Codebook
+
+##Input: 
+
+_ `x_train`, `y_train`, `x_test`, `y_test`, `subject_train` and `subject_test`. In particular, the zipfile downloaded from the url given is sufficient.
+
+##Output:
+_ Clean data set which merge x, y(Activity) and Subject as well as combine train and test data set.
+_ A summary table with the average of each variable for each activity and each subject in txt format.
+
+##Method:
+_`unzip` to get extract and get file name without actually unzipping it.
+
+_ `read.table` to import txt file into console.
+
+_ `grep` to search for the mean and standard deviation in the name list.
+
+_ `merge` to name activities.
+
+_ `ddply` to summarize data (mean by subject and activity) for each variable.
